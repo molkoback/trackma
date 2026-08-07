@@ -51,6 +51,7 @@ class SettingsWindow(Gtk.Window):
     radio_tracker_local = Gtk.Template.Child()
     radio_tracker_mpris = Gtk.Template.Child()
     entry_player_process = Gtk.Template.Child()
+    txt_file_chooser_executable = Gtk.Template.Child()
     btn_file_chooser_executable = Gtk.Template.Child()
     listbox_directories = Gtk.Template.Child()
     btn_add_directory = Gtk.Template.Child()
@@ -171,7 +172,7 @@ class SettingsWindow(Gtk.Window):
 
         self.entry_player_process.set_text(
             self.engine.get_config('tracker_process'))
-        self.btn_file_chooser_executable.set_filename(
+        self.txt_file_chooser_executable.set_text(
             self.engine.get_config('player'))
         self.checkbox_library_startup.set_active(
             self.engine.get_config('library_autoscan'))
@@ -284,6 +285,19 @@ class SettingsWindow(Gtk.Window):
         spin.set_sensitive(widget.get_active())
 
     @Gtk.Template.Callback()
+    def _on_btn_browse_clicked(self, btn):
+        dialog = Gtk.FileChooserDialog(title="Select player executable",
+                parent=self.get_toplevel(),
+                action=Gtk.FileChooserAction.OPEN)
+        dialog.add_buttons("_Cancel", Gtk.ResponseType.CANCEL, "_Open", Gtk.ResponseType.ACCEPT)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.ACCEPT:
+            self.txt_file_chooser_executable.set_text(dialog.get_filename())
+
+        dialog.destroy()
+
+    @Gtk.Template.Callback()
     def _on_btn_save_clicked(self, btn):
         self.save_config()
         self.destroy()
@@ -319,6 +333,7 @@ class SettingsWindow(Gtk.Window):
 
     def _enable_local(self, enable):
         self.entry_player_process.set_sensitive(enable)
+        self.txt_file_chooser_executable.set_sensitive(enable)
         self.btn_file_chooser_executable.set_sensitive(enable)
         self.checkbox_library_startup.set_sensitive(enable)
         self.checkbox_library_entire_list.set_sensitive(enable)
@@ -367,7 +382,7 @@ class SettingsWindow(Gtk.Window):
     def save_config(self):
         """Engine Configuration"""
         self.engine.set_config(
-            'player', self.btn_file_chooser_executable.get_filename() or '')
+            'player', self.txt_file_chooser_executable.get_text() or '')
         self.engine.set_config(
             'tracker_process', self.entry_player_process.get_text())
         self.engine.set_config('library_autoscan',
